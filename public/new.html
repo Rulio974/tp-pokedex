@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <title>Pokedex</title>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+        <script src = "pokemon.js"></script>
+        <script src = "pokemonExp.js"></script>
+
+
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    </head>
+    <body>
+        <div id="app">
+            <v-app>
+               
+
+            <v-container  v-resize="onResize" fluid class=" ma-0 pa-0 d-flex flex-wrap justify-center">
+
+
+            <v-card>
+                <v-card-title>
+                    <v-text-field
+                        v-model="search"
+                        append-icon="mdi-magnify"
+                        label="Recherche"
+                        single-line
+                        hide-details
+                        autofocus
+                       ></v-text-field>
+                </v-card-title>
+
+
+                <v-data-table
+               :items="pokemons"
+               :headers="headers"
+                :search="search"
+                >
+                    
+                </v-data-table>
+            </v-card>
+
+
+          
+          
+
+ 
+
+               
+        
+        
+        </v-app>
+        </div>
+
+
+        <script language = "javascript">
+            new Vue({
+
+                el: '#app',
+                vuetify: new Vuetify(),
+                data:{
+            
+                    headers: [
+                    {
+                        text: 'Pokemons',
+                        align: 'start',
+                        sortable: false,
+                        value: 'nom',
+                    },
+
+                    { text: 'HP', value:"base.HP" },
+                    { text: 'Attaque', value : "base.Attack"},
+                    { text: 'Defense', value : "base.Defense"},
+                    { text: 'Sp. Atk', value : "base.SpAttack"},
+                    { text: 'Sp. Def', value : "base.SpDefense" },
+                    { text: 'Speed', value : "base.Speed"}
+
+                    ],
+                    editedItem: {
+                    nom: '',
+                    Attack: 0,
+                    Defense: 0,
+                    SpAttack: 0,
+                    SpDefense: 0,
+                    Speed: 0,
+                    
+                },
+                    selected:'',
+                    search:'',
+                    editedIndex: -1,
+                    isTab : false,
+                    
+                    darkM: false,
+                    pokemons : [],
+                    types : [],
+                },
+                created:function(){
+                    this.getPokemons();
+                    this.getTypes();
+
+                },
+                methods:{
+                    save(){
+                        if (this.editedIndex > -1) {
+                            Object.assign(this.pokemons[this.editedIndex], this.editedItem)
+                            } else {
+                            this.desserts.push(this.editedItem)
+                            }
+                            this.close()
+                    },
+                    cancel:function(){
+                        //aller sur la page de création
+                        window.location.href = "http://localhost:8082/";
+                        
+                    },
+
+                    toggleDarkMode: function () {
+                        this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+                        this.darkM = !this.darkM;
+                        },
+
+                    getPokemonsAlea: function(){
+                        axios.get('http://localhost:8082/pokemons/alea')
+                        .then(response => {
+                        this.pokemons.length = 0;
+                        this.pokemons.push(response.data); 
+                    
+
+                            }).catch(error => {
+                            console.log(error);
+                            });
+                        },
+
+                    getPokemons:function(){
+                        axios.get('http://localhost:8082/pokemons')
+                        .then(response => {
+
+
+                            this.pokemons = response.data;
+
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        })
+                    },
+
+                    onResize() {
+                        this.windowSize = { x: window.innerWidth, y: window.innerHeight };
+
+                    },
+ 
+
+                    getPokemonsTypes:function(selected){
+                        axios.get('http://localhost:8082/pokemons/' + selected)
+                        .then(response => {
+                            if(selected != ""){
+                                
+                            this.pokemons = response.data;
+                        }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        })
+                    },
+                    
+
+                    getTypes:function(){
+                        axios.get('http://localhost:8082/types')
+                        .then(response => {
+
+                            this.types = response.data;
+                            console.log(this.types);
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        })
+                    },
+
+                    filteredPokemons:function(){
+                        return this.pokemons.slice(this.perPage * (this.page - 1), this.perPage * this.page);
+                    }
+
+       
+
+                  
+                },
+                computed:{
+                   
+                },
+                mounted:function(){
+                    this.onResize();
+
+                   
+                        },
+                beforeDestroy:function(){
+                    window.addEventListener('resize', this.onResize)
+
+                    },
+
+
+                
+            })
+        </script>
+
+    </body>
+
+</html>

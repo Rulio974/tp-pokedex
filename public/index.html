@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <title>Pokedex</title>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,1000,700,900" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+        <script src = "pokemon.js"></script>
+        <script src = "pokemonExp.js"></script>
+
+
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    </head>
+    <body>
+        <div id="app">
+            <v-app>
+                <v-col>
+
+                <v-app-bar  color="primary" class="flex-grow-0 justify-space-around" height="100"  prominent src="dialga.jpg" app dark>
+                    <v-app-bar-nav-icon @click.stop="drawer = !drawer" class="ma-5"></v-app-bar-nav-icon>
+                   
+                    <v-col
+                    class="d-flex"
+                    cols="3"
+                    sm="3">
+                        <v-select classs="ma-5" outlined :items="types" return-object :v-model ="selected" label="Select a Type"  v-on:change="getPokemonsTypes"></v-select>
+                    </v-col>
+
+                  </v-app-bar>
+                  <v-navigation-drawer app v-model="drawer">
+                    <v-list-item>
+                      <v-list-item-content>
+                        
+                        <v-list-item-title class="text-h6"> <v-circle-avatar></v-circle-avatar> Pokedex</v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list dense nav>
+                        
+                      <v-list-item @click="getPokemons" link>
+                        <v-list-item-icon>
+                          <v-icon>mdi-home</v-icon>
+                        </v-list-item-icon>
+            
+                        <v-list-item-content>
+                          <v-list-item-title>Acceuil</v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list>
+                        
+                        <v-list-item @click="getPokemonsAlea" link>
+                          <v-list-item-icon>
+                            <v-icon>mdi-dice-3-outline</v-icon>
+                          </v-list-item-icon>
+              
+                          <v-list-item-content>
+                            <v-list-item-title>Pokemon Aléatoire</v-list-item-title>
+                          </v-list-item-content>
+                        </v-list-item>
+
+                        <v-list-item @click="setTab" link>
+                            <v-list-item-icon>
+                              <v-icon>mdi-file-table-box-multiple-outline</v-icon>
+                            </v-list-item-icon>
+                
+                            <v-list-item-content>
+                              <v-list-item-title>Tableau Comparatif</v-list-item-title>
+                            </v-list-item-content>
+                          </v-list-item>
+  
+
+                      <v-list-item v-if="darkM == false" @click="toggleDarkMode" link>
+                        <v-list-item-icon>
+                          <v-icon>mdi-moon-waxing-crescent</v-icon>
+                        </v-list-item-icon>
+            
+                        <v-list-item-content>
+                          <v-list-item-title >DarkMode</v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+
+                      <v-list-item v-if="darkM == true" @click="toggleDarkMode" link>
+                        <v-list-item-icon>
+                          <v-icon>mdi-weather-sunny</v-icon>
+                        </v-list-item-icon>
+            
+                        <v-list-item-content>
+                          <v-list-item-title >LightMode</v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+
+                    </v-list>
+                  </v-navigation-drawer>
+                  <v-spacer></v-spacer>
+
+
+            <v-container  fluid class="ma-0 pa-0 d-flex justify-center">
+
+                  
+                  <v-spacer></v-spacer>
+                  <v-row v-if="isNotTab" flex class="d-flex flex-wrap justify-space-around">
+                    <pokemon-card v-for="pokemon in pokemons" :pokemon="pokemon" :select="selected"></pokemon-card>
+                    <!-- <v-expansion-panels v-else inset>
+
+                        <v-expansion-panel 
+                          v-for="pokemon in pokemons"
+                          :key="pokemons.id"
+                        >
+                          <v-expansion-panel-header :class="pokemon.types[0].couleur">{{pokemon.nom}}</v-expansion-panel-header>
+                          <v-expansion-panel-content>
+                            <pokemon-exp :pokemon="pokemon"></pokemon-card>
+
+                          </v-expansion-panel-content>
+                        </v-expansion-panel>
+                      </v-expansion-panels> -->
+                </v-row>
+                <v-row v-else >
+                    <v-card>
+                        <v-card-title>
+                            <v-text-field
+                                v-model="search"
+                                append-icon="mdi-magnify"
+                                label="Recherche"
+                                single-line
+                                hide-details
+                                autofocus
+                               ></v-text-field>
+                        </v-card-title>
+        
+        
+                        <v-data-table
+                       :items="pokemons"
+                       :headers="headers"
+                        :search="search"
+                        >
+                            
+                        </v-data-table>
+                    </v-card>
+                </v-row>
+            </v-container>
+            </v-col>
+
+
+
+
+            
+       
+
+
+            </v-app>
+        </div>
+
+
+        <script language = "javascript">
+            new Vue({
+
+                el: '#app',
+                vuetify: new Vuetify(),
+
+                data:{
+                    drawer: false,
+                    icons: [
+                    { title: 'Dashboard', icon: 'mdi-view-dashboard' },
+                    { title: 'Account', icon: 'mdi-account-box' },
+                    { title: 'Settings', icon: 'mdi-cog' },
+                    ],
+
+                    headers: [
+                    {
+                        text: 'Pokemons',
+                        align: 'start',
+                        sortable: false,
+                        value: 'nom',
+                    },
+                    
+                    { text: 'HP' ,value : "base.HP"},
+                    { text: 'Attaque', value : "base.Attack"},
+                    { text: 'Defense', value : "base.Defense"},
+                    { text: 'Sp. Atk', value : "base.SpAttack"},
+                    { text: 'Sp. Def', value : "base.SpDefense" },
+                    { text: 'Speed', value : "base.Speed"}
+
+                    ],
+                    windowSize: {
+                        x: 0,
+                        y: 0,
+                    },
+                    isNotTab: false,
+                    search: '',
+                    selected:'',
+                    page:8,
+                    perPage: 1,
+                    darkM: false,
+                    pokemons : [],
+                    types : [],
+                    items : ["Eau", "Feu", "Plante", "Insecte", "Normal", "Vol"]
+                },
+                created:function(){
+                    this.getTypes();
+                    this.getPokemons();
+
+                },
+                methods:{
+
+                    setTab: function(){
+                        this.isNotTab = false;
+
+                        axios.get("http://localhost:8082/tableau").
+                        then(response => {
+                            this.pokemons = response.data;
+                        });
+                    },
+
+                    toggleDarkMode: function () {
+                        this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+                        this.darkM = !this.darkM;
+                        },
+
+                    getPokemonsAlea: function(){
+                        this.isNotTab = true;
+
+                        axios.get('http://localhost:8082/pokemons/alea')
+                        .then(response => {
+                        this.pokemons.length = 0;
+                        this.pokemons.push(response.data); 
+                    
+
+                            }).catch(error => {
+                            console.log(error);
+                            });
+                        },
+
+                    addNew:function(){
+                        //aller sur la page de création
+                        window.location.href = "http://localhost:8082/new";
+
+                    },
+
+                    getPokemons:function(){
+                        this.isNotTab = true;
+
+                        axios.get('http://localhost:8082/pokemons')
+                        .then(response => {
+
+
+                            this.pokemons = response.data;
+
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        })
+                    },
+
+                    onResize() {
+                        this.windowSize = { x: window.innerWidth, y: window.innerHeight };
+
+                    },
+ 
+
+                    getPokemonsTypes:function(selected){
+                        
+                        axios.get('http://localhost:8082/pokemons/' + selected)
+                        .then(response => {
+                            if(selected != ""){
+                                
+                            this.pokemons = response.data;
+                        }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        })
+                    },
+                    
+
+                    getTypes:function(){
+                        axios.get('http://localhost:8082/types')
+                        .then(response => {
+
+                            this.types = response.data;
+                            console.log(this.types);
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        })
+                    },
+
+                    filteredPokemons:function(){
+                        return this.pokemons.slice(this.perPage * (this.page - 1), this.perPage * this.page);
+                    }
+
+       
+
+                  
+                },
+                computed:{
+                   
+                },
+                mounted:function(){
+                    this.onResize();
+
+                   
+                        },
+                beforeDestroy:function(){
+                    window.addEventListener('resize', this.onResize)
+
+                    },
+
+
+                
+            })
+        </script>
+
+    </body>
+
+</html>
